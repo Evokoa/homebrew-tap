@@ -19,7 +19,9 @@ class Pggraph < Formula
     package_dir = buildpath/"pggraph-package"
 
     cd "graph" do
-      system Formula["pgrx"].opt_bin/"cargo-pgrx", "package",
+      ENV.prepend_path "PATH", Formula["pgrx"].opt_bin
+
+      system "cargo", "pgrx", "package",
              "--pg-config", pg_config,
              "--out-dir", package_dir,
              "--no-default-features",
