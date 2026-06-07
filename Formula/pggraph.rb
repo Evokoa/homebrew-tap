@@ -5,7 +5,7 @@ class Pggraph < Formula
   sha256 "37546dc0b4ceae76e16e29ff9cee65d2103bbe45851ffae9aa3513ed546a0573"
   license "Apache-2.0"
 
-  depends_on "pgrx" => :build
+  depends_on "pgrx@0.18.0" => :build
   depends_on "rust" => :build
   depends_on "postgresql@17" => [:build, :test]
 
@@ -19,7 +19,7 @@ class Pggraph < Formula
     package_dir = buildpath/"pggraph-package"
 
     cd "graph" do
-      ENV.prepend_path "PATH", Formula["pgrx"].opt_bin
+      ENV.prepend_path "PATH", Formula["pgrx@0.18.0"].opt_bin
 
       system "cargo", "pgrx", "package",
              "--pg-config", pg_config,
