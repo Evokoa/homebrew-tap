@@ -31,7 +31,7 @@ class Pggraph < Formula
     end
 
     staged_prefix = package_dir/HOMEBREW_PREFIX.to_s.delete_prefix("/")
-    lib.install Dir[staged_prefix/"lib/#{postgresql.name}/*"]
+    (lib/postgresql.name).install Dir[staged_prefix/"lib/#{postgresql.name}/*"]
     (share/postgresql.name/"extension").install Dir[staged_prefix/"share/#{postgresql.name}/extension/*"]
   end
 
