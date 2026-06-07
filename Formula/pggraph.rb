@@ -15,7 +15,7 @@ class Pggraph < Formula
 
   def install
     pg_config = postgresql.opt_bin/"pg_config"
-    pg_major = shell_output("#{pg_config} --version").match(/PostgreSQL (\d+)/)[1]
+    pg_major = Utils.safe_popen_read(pg_config, "--version").match(/PostgreSQL (\d+)/)[1]
     package_dir = buildpath/"pggraph-package"
 
     cd "graph" do
@@ -49,7 +49,8 @@ class Pggraph < Formula
     begin
       system psql, "-p", port.to_s, "-d", "postgres", "-c", "CREATE EXTENSION graph;"
       assert_match version.to_s,
-                   shell_output("#{psql} -p #{port} -d postgres -Atc \"SELECT extversion FROM pg_extension WHERE extname = 'graph'\"")
+                   Utils.safe_popen_read(psql, "-p", port.to_s, "-d", "postgres", "-Atc",
+                                         "SELECT extversion FROM pg_extension WHERE extname = 'graph'")
     ensure
       system pg_ctl, "stop", "-D", datadir
     end
