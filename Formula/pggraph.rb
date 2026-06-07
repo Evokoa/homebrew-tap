@@ -6,8 +6,8 @@ class Pggraph < Formula
   license "Apache-2.0"
 
   depends_on "pgrx@0.18.0" => :build
-  depends_on "rust" => :build
   depends_on "postgresql@17" => [:build, :test]
+  depends_on "rust" => :build
 
   def postgresql
     Formula["postgresql@17"]
