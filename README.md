@@ -19,7 +19,7 @@ psql -d postgres -c "CREATE EXTENSION graph;"
 For local formula validation:
 
 ```sh
-brew install --build-from-source ./Formula/pgrx@0.18.0.rb
+brew install --build-from-source ./Formula/pgrx@0.18.1.rb
 brew install --build-from-source ./Formula/pggraph.rb
 brew test pggraph
 ```
