@@ -6,7 +6,7 @@ Homebrew formulae for Evokoa projects.
 
 ```sh
 brew tap Evokoa/tap
-brew install pggraph
+brew install Evokoa/tap/pggraph
 ```
 
 pgGraph is packaged for Homebrew PostgreSQL 17. After installation, start or
@@ -14,6 +14,20 @@ restart PostgreSQL and create the extension:
 
 ```sh
 psql -d postgres -c "CREATE EXTENSION graph;"
+```
+
+## pgContext
+
+```sh
+brew tap Evokoa/tap
+brew install Evokoa/tap/pgcontext
+```
+
+pgContext is packaged for Homebrew PostgreSQL 17. After installation, start or
+restart PostgreSQL and create the extension:
+
+```sh
+psql -d postgres -c "CREATE EXTENSION pgcontext;"
 ```
 
 ## Upgrade From 0.1.x To 1.0
@@ -59,5 +73,7 @@ For local formula validation:
 ```sh
 brew install --build-from-source ./Formula/pgrx@0.19.1.rb
 brew install --build-from-source ./Formula/pggraph.rb
+brew install --build-from-source ./Formula/pgcontext.rb
 brew test pggraph
+brew test pgcontext
 ```

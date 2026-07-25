@@ -1,0 +1,73 @@
+# typed: strict
+# frozen_string_literal: true
+
+# Formula for the pgContext PostgreSQL extension.
+class Pgcontext < Formula
+  desc "Vector and hybrid retrieval over authoritative PostgreSQL tables"
+  homepage "https://github.com/evokoa/pgcontext"
+  url "https://github.com/evokoa/pgcontext/releases/download/v0.2.0/pgContext-0.2.0.zip"
+  sha256 "55f401427ec63df5d63a5d27dd03f1279f622272ddcdcc35934b037de79d3413"
+  license "Apache-2.0"
+
+  depends_on "pgrx@0.19.1" => :build
+  depends_on "postgresql@17" => [:build, :test]
+  depends_on "rust" => :build
+
+  def postgresql
+    Formula["postgresql@17"]
+  end
+
+  def install
+    pg_config = postgresql.opt_bin/"pg_config"
+    package_dir = buildpath/"pgcontext-package"
+
+    ENV["PGRX_HOME"] = buildpath/".pgrx"
+    ENV.prepend_path "PATH", formula_opt_bin("pgrx@0.19.1")
+    system "cargo", "pgrx", "init", "--pg17=#{pg_config}"
+    system "cargo", "pgrx", "package", "-p", "context-pg",
+           "--pg-config", pg_config,
+           "--out-dir", package_dir,
+           "--no-default-features",
+           "--features", "pg17"
+
+    staged_prefix = package_dir/HOMEBREW_PREFIX.to_s.delete_prefix("/")
+    extension_dir = staged_prefix/"share/#{postgresql.name}/extension"
+    extension_dir.install "sql/pgcontext--0.1.0--0.2.0.sql"
+    extension_dir.install "pgcontext_pgvector.control"
+    extension_dir.install "sql/pgcontext_pgvector--#{version}.sql"
+
+    (lib/postgresql.name).install Dir[staged_prefix/"lib/#{postgresql.name}/*"]
+    (share/postgresql.name/"extension").install \
+      Dir[staged_prefix/"share/#{postgresql.name}/extension/*"]
+  end
+
+  test do
+    ENV["LC_ALL"] = "C"
+
+    pg_ctl = postgresql.opt_bin/"pg_ctl"
+    psql = postgresql.opt_bin/"psql"
+    port = free_port
+    datadir = testpath/postgresql.name
+
+    system pg_ctl, "initdb", "-D", datadir
+    (datadir/"postgresql.conf").write <<~EOS, mode: "a+"
+      port = #{port}
+      dynamic_library_path = '$libdir'
+    EOS
+
+    system pg_ctl, "start", "-D", datadir, "-l", testpath/"postgres.log"
+    begin
+      system psql, "-p", port.to_s, "-d", "postgres", "-v", "ON_ERROR_STOP=1", "-c",
+             "CREATE EXTENSION pgcontext;"
+      version_sql = "SELECT extversion FROM pg_extension WHERE extname = 'pgcontext'"
+      actual_version = shell_output("#{psql} -p #{port} -d postgres -Atc \"#{version_sql}\"").strip
+      assert_equal version.to_s, actual_version
+
+      distance_sql = "SELECT '[1,2]'::pgcontext.vector OPERATOR(pgcontext.<->) '[2,2]'::pgcontext.vector"
+      distance = shell_output("#{psql} -p #{port} -d postgres -Atc \"#{distance_sql}\"").strip
+      assert_equal "1", distance
+    ensure
+      system pg_ctl, "stop", "-D", datadir
+    end
+  end
+end
