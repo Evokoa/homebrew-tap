@@ -1,11 +1,11 @@
 class Pggraph < Formula
   desc "Graph database superpowers for your existing Postgres data"
   homepage "https://github.com/evokoa/pggraph"
-  url "https://github.com/evokoa/pggraph/archive/refs/tags/v0.1.7.tar.gz"
-  sha256 "f7e83ebfb4ac6d5be9a64950317bbca0cad8907148de6d5388430a3007c04f3e"
+  url "https://github.com/evokoa/pggraph/archive/refs/tags/v1.0.0.tar.gz"
+  sha256 "3d1a3e51f88678e4378cd85fe3bbcdee24f4ea29a06c612201d0c5fb6acf1f3e"
   license "Apache-2.0"
 
-  depends_on "pgrx@0.18.1" => :build
+  depends_on "pgrx@0.19.1" => :build
   depends_on "postgresql@17" => [:build, :test]
   depends_on "rust" => :build
 
@@ -20,7 +20,7 @@ class Pggraph < Formula
 
     cd "graph" do
       ENV["PGRX_HOME"] = buildpath/".pgrx"
-      ENV.prepend_path "PATH", Formula["pgrx@0.18.1"].opt_bin
+      ENV.prepend_path "PATH", formula_opt_bin("pgrx@0.19.1")
 
       system "cargo", "pgrx", "init", "--pg#{pg_major}", pg_config
       system "cargo", "pgrx", "package",
