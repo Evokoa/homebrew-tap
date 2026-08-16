@@ -89,36 +89,91 @@ SELECT * FROM graph.build();
 SELECT * FROM graph.status();
 ```
 
-## Move pgContext 0.1.0 To Homebrew 0.2.0
+## Upgrade pgGraph 1.0 To 1.1
 
-pgContext provides a versioned database update from 0.1.0 to 0.2.0, but 0.1.0
-was distributed outside this Homebrew tap. Take a PostgreSQL backup and stop
-pgContext-using traffic. Keep the `pgcontext` extension registered in the
-database, remove the 0.1.0 package files using the original source or PGXN
-installation method, and confirm that stale `pgcontext` library, control, and
-SQL files no longer occupy Homebrew PostgreSQL 17's directories.
+pgGraph provides a supported database update from 1.0.0 to 1.1.0. Take a
+PostgreSQL backup, record `SELECT * FROM graph.status();`, and stop application
+traffic that uses pgGraph before replacing the package.
 
-Install the 0.2.0 Homebrew package and restart PostgreSQL:
+Upgrade the Homebrew package and restart PostgreSQL:
+
+```sh
+brew update
+brew upgrade Evokoa/tap/pggraph
+brew services restart postgresql@17
+```
+
+Run the extension update in every database that has pgGraph installed, then
+verify its version and graph state:
+
+```sql
+ALTER EXTENSION graph UPDATE TO '1.1.0';
+SELECT extversion FROM pg_extension WHERE extname = 'graph';
+SELECT * FROM graph.status();
+```
+
+Existing v6 graph artifacts remain compatible and do not require a blanket
+rebuild. If an RLS-active relationship mapping fails with diagnostic `PG023`,
+run `graph.build()` to repair that targeted compatibility condition. Follow the
+[pgGraph 1.1 compatibility guide](https://github.com/evokoa/pggraph/blob/v1.1.0/docs/user_guide/versioning-and-compatibility.mdx)
+for validation and backup-restore rollback; an in-place downgrade to 1.0.0 is
+not supported.
+
+## Upgrade pgContext 0.1 Or 0.2 To 0.3
+
+pgContext 0.3.0 is a clean-install baseline. It does not provide an extension
+update script from 0.1 or 0.2, so do not run `ALTER EXTENSION ... UPDATE` for
+this release. A Homebrew package upgrade replaces files on disk but cannot
+migrate an extension already registered inside a database.
+
+Before replacing the package:
+
+- take and verify a PostgreSQL backup;
+- stop application traffic that uses pgContext;
+- inventory objects that depend on pgContext and export collection or profile
+  configuration that must be recreated;
+- preserve ordinary source tables, and cast or export columns that use
+  pgContext-owned source types before removing the old extension.
+
+Follow the complete
+[pgContext 0.3.0 migration procedure](https://github.com/evokoa/pgcontext/blob/v0.3.0/docs/user_guide/release_notes.md#compatibility-and-migration).
+After reviewing the dependency plan, remove the old extensions without
+`CASCADE`. These commands fail safely if dependent objects still need attention:
+
+```sql
+DROP EXTENSION IF EXISTS pgcontext_pgvector;
+DROP EXTENSION pgcontext;
+```
+
+Upgrade an existing Homebrew installation, then restart PostgreSQL:
+
+```sh
+brew update
+brew upgrade Evokoa/tap/pgcontext
+brew services restart postgresql@17
+```
+
+For a 0.1 or 0.2 package installed from source or PGXN, remove its package files
+using the original installation method and run the following instead. Do not
+leave stale library, control, or SQL files in Homebrew PostgreSQL 17's
+directories.
 
 ```sh
 brew install Evokoa/tap/pgcontext
 brew services restart postgresql@17
 ```
 
-Run the extension update as a PostgreSQL superuser:
+Finally, create pgContext 0.3, recreate registrations, and rebuild derived
+indexes and artifacts from the authoritative source rows:
 
-```sh
-psql -X -v ON_ERROR_STOP=1 -d postgres \
-  -c "ALTER EXTENSION pgcontext UPDATE TO '0.2.0';"
+```sql
+CREATE EXTENSION pgcontext VERSION '0.3.0';
+-- Recreate registrations, profiles, indexes, and other derived artifacts.
 ```
 
-The database update preserves pgContext catalog rows and user-owned source
-tables. It moves pgContext-owned vector types into the `pgcontext` schema, so
-applications should use qualified types such as `pgcontext.vector` or
-deliberately configure their `search_path`. A pgvector-first 0.1.0 coexistence
-installation has a different migration boundary; follow the
-[pgContext 0.2.0 release notes](https://github.com/evokoa/pgcontext/blob/v0.2.0/docs/user_guide/release_notes.md)
-instead of forcing the update.
+The separate `pgcontext_pgvector` companion extension is retired in 0.3.0. For
+pgvector coexistence, install the pgContext and pgvector main extensions and
+follow pgContext's documented binding and migration workflow.
 
 ## Routine Package Upgrades
 

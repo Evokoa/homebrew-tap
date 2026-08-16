@@ -5,8 +5,8 @@
 class Pgcontext < Formula
   desc "Vector and hybrid retrieval over authoritative PostgreSQL tables"
   homepage "https://github.com/evokoa/pgcontext"
-  url "https://github.com/evokoa/pgcontext/releases/download/v0.2.0/pgContext-0.2.0.zip"
-  sha256 "55f401427ec63df5d63a5d27dd03f1279f622272ddcdcc35934b037de79d3413"
+  url "https://github.com/evokoa/pgcontext/releases/download/v0.3.0/pgContext-0.3.0.zip"
+  sha256 "7a33348b44f61985a0341e03b626fb3185290d51b70d830df2119de636a76640"
   license "Apache-2.0"
 
   depends_on "pgrx@0.19.1" => :build
@@ -31,11 +31,6 @@ class Pgcontext < Formula
            "--features", "pg17"
 
     staged_prefix = package_dir/HOMEBREW_PREFIX.to_s.delete_prefix("/")
-    extension_dir = staged_prefix/"share/#{postgresql.name}/extension"
-    extension_dir.install "sql/pgcontext--0.1.0--0.2.0.sql"
-    extension_dir.install "pgcontext_pgvector.control"
-    extension_dir.install "sql/pgcontext_pgvector--#{version}.sql"
-
     (lib/postgresql.name).install Dir[staged_prefix/"lib/#{postgresql.name}/*"]
     (share/postgresql.name/"extension").install \
       Dir[staged_prefix/"share/#{postgresql.name}/extension/*"]
