@@ -89,11 +89,13 @@ SELECT * FROM graph.build();
 SELECT * FROM graph.status();
 ```
 
-## Upgrade pgGraph 1.0 To 1.1
+## Upgrade pgGraph 1.0 Or 1.1 To 1.2
 
-pgGraph provides a supported database update from 1.0.0 to 1.1.0. Take a
-PostgreSQL backup, record `SELECT * FROM graph.status();`, and stop application
-traffic that uses pgGraph before replacing the package.
+pgGraph provides supported database updates from 1.0.0 and 1.1.0 to 1.2.0.
+The package includes both versioned SQL update scripts, so PostgreSQL can chain
+the 1.0-to-1.1 and 1.1-to-1.2 updates when necessary. Take a PostgreSQL backup,
+record `SELECT * FROM graph.status();`, and stop application traffic that uses
+pgGraph before replacing the package.
 
 Upgrade the Homebrew package and restart PostgreSQL:
 
@@ -107,17 +109,19 @@ Run the extension update in every database that has pgGraph installed, then
 verify its version and graph state:
 
 ```sql
-ALTER EXTENSION graph UPDATE TO '1.1.0';
+ALTER EXTENSION graph UPDATE TO '1.2.0';
 SELECT extversion FROM pg_extension WHERE extname = 'graph';
 SELECT * FROM graph.status();
 ```
 
 Existing v6 graph artifacts remain compatible and do not require a blanket
-rebuild. If an RLS-active relationship mapping fails with diagnostic `PG023`,
-run `graph.build()` to repair that targeted compatibility condition. Follow the
-[pgGraph 1.1 compatibility guide](https://github.com/evokoa/pggraph/blob/v1.1.0/docs/user_guide/versioning-and-compatibility.mdx)
-for validation and backup-restore rollback; an in-place downgrade to 1.0.0 is
-not supported.
+rebuild. New builds publish v7 artifacts; rebuild when the base artifact must
+represent more than 254 relationship types. If an RLS-active relationship
+mapping fails with diagnostic `PG023`, run `graph.build()` to repair that
+targeted compatibility condition. Follow the
+[pgGraph 1.2 compatibility guide](https://github.com/evokoa/pggraph/blob/v1.2.0/docs/user_guide/versioning-and-compatibility.mdx)
+for validation and backup-restore rollback. An in-place downgrade is not
+supported, and a 1.1 binary cannot read v7 artifacts.
 
 ## Upgrade pgContext 0.1 Or 0.2 To 0.3
 

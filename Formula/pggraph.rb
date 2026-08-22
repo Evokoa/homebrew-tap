@@ -1,8 +1,8 @@
 class Pggraph < Formula
   desc "Graph database superpowers for your existing Postgres data"
   homepage "https://github.com/evokoa/pggraph"
-  url "https://github.com/evokoa/pggraph/releases/download/v1.1.0/pgGraph-1.1.0.zip"
-  sha256 "360c4822df8a9aa49c2acd8fda2ca278b10d1bddd8b8a707ee400380f118c7ae"
+  url "https://github.com/evokoa/pggraph/releases/download/v1.2.0/pgGraph-1.2.0.zip"
+  sha256 "697a89d5d573fd1779b22ccafd2164076e3732afa89a5de88eca7bfaa9050275"
   license "Apache-2.0"
 
   depends_on "pgrx@0.19.1" => :build
