@@ -89,13 +89,13 @@ SELECT * FROM graph.build();
 SELECT * FROM graph.status();
 ```
 
-## Upgrade pgGraph 1.0 Or 1.1 To 1.2
+## Upgrade pgGraph 1.x To 1.2.1
 
-pgGraph provides supported database updates from 1.0.0 and 1.1.0 to 1.2.0.
-The package includes both versioned SQL update scripts, so PostgreSQL can chain
-the 1.0-to-1.1 and 1.1-to-1.2 updates when necessary. Take a PostgreSQL backup,
-record `SELECT * FROM graph.status();`, and stop application traffic that uses
-pgGraph before replacing the package.
+pgGraph provides supported database updates from 1.0.0, 1.1.0, and 1.2.0 to
+1.2.1. The package includes each versioned SQL update script, so PostgreSQL can
+chain the updates when necessary. Take a PostgreSQL backup, record the current
+`graph.status()` output, and stop application traffic that uses pgGraph before
+replacing the package.
 
 Upgrade the Homebrew package and restart PostgreSQL:
 
@@ -109,19 +109,20 @@ Run the extension update in every database that has pgGraph installed, then
 verify its version and graph state:
 
 ```sql
-ALTER EXTENSION graph UPDATE TO '1.2.0';
+ALTER EXTENSION graph UPDATE TO '1.2.1';
+SELECT * FROM graph.build();
 SELECT extversion FROM pg_extension WHERE extname = 'graph';
 SELECT * FROM graph.status();
 ```
 
-Existing v6 graph artifacts remain compatible and do not require a blanket
-rebuild. New builds publish v7 artifacts; rebuild when the base artifact must
-represent more than 254 relationship types. If an RLS-active relationship
-mapping fails with diagnostic `PG023`, run `graph.build()` to repair that
-targeted compatibility condition. Follow the
-[pgGraph 1.2 compatibility guide](https://github.com/evokoa/pggraph/blob/v1.2.0/docs/user_guide/versioning-and-compatibility.mdx)
-for validation and backup-restore rollback. An in-place downgrade is not
-supported, and a 1.1 binary cannot read v7 artifacts.
+The rebuild is required for 1.2.1's database-scoped artifact roots, catalog
+provenance, and transactional generation authority. Repeat `graph.build()` for
+every registered graph, selecting each named graph before its build. Source
+tables and registrations remain authoritative and are preserved by the
+additive update. Logical restores also require a rebuild. Follow the
+[pgGraph 1.2.1 compatibility guide](https://github.com/evokoa/pggraph/blob/v1.2.1/docs/user_guide/versioning-and-compatibility.mdx)
+for validation and backup-restore rollback. An in-place binary downgrade is not
+supported.
 
 ## Upgrade pgContext 0.1 Or 0.2 To 0.3
 
