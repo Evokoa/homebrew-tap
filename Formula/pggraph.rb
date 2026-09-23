@@ -47,13 +47,14 @@ class Pggraph < Formula
     (datadir/"postgresql.conf").write <<~EOS, mode: "a+"
       port = #{port}
       dynamic_library_path = '$libdir'
+      unix_socket_directories = '#{testpath}'
     EOS
 
     system pg_ctl, "start", "-D", datadir, "-l", testpath/"postgres.log"
     begin
-      system psql, "-p", port.to_s, "-d", "postgres", "-c", "CREATE EXTENSION graph;"
+      system psql, "-h", testpath, "-p", port.to_s, "-d", "postgres", "-c", "CREATE EXTENSION graph;"
       assert_match version.to_s,
-                   Utils.safe_popen_read(psql, "-p", port.to_s, "-d", "postgres", "-Atc",
+                   Utils.safe_popen_read(psql, "-h", testpath, "-p", port.to_s, "-d", "postgres", "-Atc",
                                          "SELECT extversion FROM pg_extension WHERE extname = 'graph'")
     ensure
       system pg_ctl, "stop", "-D", datadir
